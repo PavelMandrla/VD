@@ -1,0 +1,7 @@
+cv2/venv/
+cv3/__pycache__/
+cv3_shepard/__pycache__/
+cv4/data/
+*/cpp/cmake-build-debug/
+*/cpp/.idea/
+*/.idea/

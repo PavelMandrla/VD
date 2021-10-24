@@ -1,0 +1,38 @@
+# cvičení 6
+- zobrazení distribuce
+  - histogram četnosti
+  - graf hustoty
+    - spojitá verze histogramu, který je diskrétní
+  - kumulativní hustota CDF
+  - boxplot
+  - violin plot
+- nejistoty
+    - error bars
+- trellisovy ploty
+  - zavání to exploratorní grafikou
+  - skupinka malých pltů
+  - způsob zobrazení vícedimenzionálních dat v rovině
+  - na všech osách všech subgrafů jsou stejné jednotky
+  - je jedno, jaký typ plotu ty subrafy jsou
+- multi-level pie chart
+- pareto graf
+  - barchart zkombinovaný s kumulativním grafem
+- boxplot
+  - tlustá čára je medián
+  - krabice 25% percentil
+    - první a třetí kvartil
+  - rozptyl
+  - kolečka jsou outliery
+- rekonstrukce grafu hustoty
+  - jsme schopni zkonstruovat histogram
+    - představ si to jako čárky na ose X, u které sčítáme četnost na intervalu
+    - děláme odhad, proto f s čárkou
+    - funkce K - nezáporná funkce
+      - normalita, symetrie
+      - integrál přes ně je roven jedné
+- violin plot
+  - kombinace boxplotu a rekonstrukce hustoty grafu
+
+- na datech z prvního cvika- histogram, boxplot, densityplot, violin plot
+  - Když bude violinplot, tak to bude super
+  - exportovat do pdf - vektorový formát, popisek

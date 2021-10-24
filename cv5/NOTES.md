@@ -1,0 +1,33 @@
+# přednáška 5
+- to co si řekneme by se zpětně mělo projevit ve vizualizacích
+- __grafy (charts)__
+  - bodový
+    - body spojené čárami
+  - sloupcový
+  - koláčový
+  - mozaikový
+  - populační pyramidy
+  - pavoukový graf
+  - vodopádový graf
+    - zobrazuje kumulativní efekt
+    - např státní dluh
+  - scatter plot
+    - korelace dvou veličin
+    - může nastat situace, kdy máme malý prostor/moc dat
+      - špatně přehledné
+      - využijeme průhlednost a body se nám budou blendovat, do čehož se zakóduje hustota těch vzorků
+      - nebo něco ve stylu heatmapy, nebo shepardovy interpolace
+      - korelace a kauzalita
+      - často proložíme nějakou funkcí - trend
+- co ná má držet na správné stopě
+  - lie factor
+    - poměr mezi velikostí efektu, který je ukazován grafikou a velikostí efektu přímo v datech
+    - velikost efektu grafiky - např délka úseček v centimetrech
+    - velikost efektu v datech - samotné hodnoty datech
+    - chceme, aby poměr = 1
+  - data ink ratio
+    - inkoust vybabraný na data/inkoust na nakreslení celé grafiky
+      - mělo by to být blízko 1
+        - co nejvíce inkoustu je aplikováno na data
+          - zbytek je distrakce
+            - 3d efekty, background, stíny
