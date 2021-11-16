@@ -15,8 +15,7 @@
 
 int main(int argc, char* argv[]) {
     // Parse command line arguments
-    if (argc != 2)
-    {
+    if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " Filename(.vtp) e.g. Torso.vtp"
                   << std::endl;
         return EXIT_FAILURE;

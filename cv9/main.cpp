@@ -7,7 +7,7 @@
 #include "GridCell.h"
 
 int main() {
-    /*
+/*
     vtkNew<vtkXMLPolyDataWriter> writer;
 
     GridCell cell(
@@ -24,7 +24,7 @@ int main() {
     writer->SetInputData(cell.triangulate());
     writer->SetFileName("help.vtp");
     writer->Write();
-    */
+*/
 
     auto frames = Particle::loadParticles("../data/");
 
