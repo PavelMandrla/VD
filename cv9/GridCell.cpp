@@ -299,7 +299,7 @@ constexpr array<tuple<int, int>, 12> EDGE_VERTICES = {
         make_tuple(4, 5),
         make_tuple(5, 6),
         make_tuple(6, 7),
-        make_tuple(4, 4),
+        make_tuple(7, 4),
 
         make_tuple(0, 4),
         make_tuple(1, 5),
@@ -324,7 +324,7 @@ vtkSmartPointer<vtkPolyData> GridCell::triangulate() {
             auto v1 = this->vertices[get<0>(vertexIndices)];
             auto v2 = this->vertices[get<1>(vertexIndices)];
 
-            //cout << i << endl;
+            cout << i << endl;
 
             /*
             float df = (THRESHOLD - v1->value) / (v2->value - v1->value);
@@ -336,7 +336,7 @@ vtkSmartPointer<vtkPolyData> GridCell::triangulate() {
             float x = (v1->x + v2->x) / 2.0f;
             float y = (v1->y + v2->y) / 2.0f;
             float z = (v1->z + v2->z) / 2.0f;
-
+            cout << "   x:" << x << " y:" << y << " z:" << z << endl;
             points->InsertPoint(i, x, y, z);
             //vertPointMap[i] = points->InsertNextPoint(x, y, z);
         }
