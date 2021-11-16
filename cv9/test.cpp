@@ -14,47 +14,43 @@
 #include <vtkXMLPolyDataReader.h>
 
 int main(int argc, char* argv[]) {
-    // Parse command line arguments
-    if (argc != 2)
-    {
-        std::cerr << "Usage: " << argv[0] << " Filename(.vtp) e.g. Torso.vtp"
-                  << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    std::string filename = argv[1];
-
     vtkNew<vtkNamedColors> colors;
 
-    // Read all the data from the file
-    vtkNew<vtkXMLPolyDataReader> reader;
-    reader->SetFileName(filename.c_str());
-    reader->Update();
+    std::string filename;
+    for (int i = 0; i < 100; i++) {
+        filename = std::to_string(i) + ".vtp";
 
-    // Visualize
-    vtkNew<vtkPolyDataMapper> mapper;
-    mapper->SetInputConnection(reader->GetOutputPort());
+        // Read all the data from the file
+        vtkNew<vtkXMLPolyDataReader> reader;
+        reader->SetFileName(filename.c_str());
+        reader->Update();
 
-    vtkNew<vtkActor> actor;
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(colors->GetColor3d("NavajoWhite").GetData());
+        // Visualize
+        vtkNew<vtkPolyDataMapper> mapper;
+        mapper->SetInputConnection(reader->GetOutputPort());
 
-    vtkNew<vtkRenderer> renderer;
-    vtkNew<vtkRenderWindow> renderWindow;
-    renderWindow->AddRenderer(renderer);
-    vtkNew<vtkRenderWindowInteractor> renderWindowInteractor;
-    renderWindowInteractor->SetRenderWindow(renderWindow);
+        vtkNew<vtkActor> actor;
+        actor->SetMapper(mapper);
+        actor->GetProperty()->SetColor(colors->GetColor3d("NavajoWhite").GetData());
 
-    renderer->AddActor(actor);
-    renderer->SetBackground(colors->GetColor3d("DarkOliveGreen").GetData());
-    renderer->GetActiveCamera()->Pitch(90);
-    renderer->GetActiveCamera()->SetViewUp(0, 0, 1);
-    renderer->ResetCamera();
+        vtkNew<vtkRenderer> renderer;
+        vtkNew<vtkRenderWindow> renderWindow;
+        renderWindow->AddRenderer(renderer);
+        vtkNew<vtkRenderWindowInteractor> renderWindowInteractor;
+        renderWindowInteractor->SetRenderWindow(renderWindow);
 
-    renderWindow->SetSize(600, 600);
-    renderWindow->Render();
-    renderWindow->SetWindowName("ReadPolyData");
-    renderWindowInteractor->Start();
+        renderer->AddActor(actor);
+        renderer->SetBackground(colors->GetColor3d("DarkOliveGreen").GetData());
+        renderer->GetActiveCamera()->Pitch(90);
+        renderer->GetActiveCamera()->SetViewUp(0, 0, 1);
+        renderer->ResetCamera();
+
+        renderWindow->SetSize(600, 600);
+        renderWindow->Render();
+        renderWindow->SetWindowName("ReadPolyData");
+        renderWindowInteractor->Start();
+
+    }
 
     return EXIT_SUCCESS;
 }
