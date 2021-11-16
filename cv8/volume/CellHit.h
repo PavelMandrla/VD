@@ -1,0 +1,8 @@
+//
+// Created by pavel on 09.11.21.
+//
+
+#ifndef VOLUMETRICDATA_CELLHIT_H
+#define VOLUMETRICDATA_CELLHIT_H
+
+#endif //VOLUMETRICDATA_CELLHIT_H
