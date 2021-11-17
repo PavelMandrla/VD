@@ -7,13 +7,14 @@
 #include <vtkCleanPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
+#include "Options.h"
 
 Grid::Grid(Particle *particles) {
     this->gridPoints = vector<vector<vector<shared_ptr<GridPoint>>>>(81,vector<vector<shared_ptr<GridPoint>>>(81,vector<shared_ptr<GridPoint>>(81,nullptr)));
 
     float dp = 1.0f / 81.0f;
 
-    #pragma omp parallel for // NOLINT(openmp-use-default-none)
+    //#pragma omp parallel for // NOLINT(openmp-use-default-none)
     for (int x_i = 0; x_i < 81; x_i++) {
         auto pos_x = float(x_i) * dp - 0.5f;
         for (int y_i = 0; y_i < 81; y_i++) {
@@ -29,10 +30,11 @@ Grid::Grid(Particle *particles) {
 }
 
 void Grid::calculateValues(Particle* particles) {
-    float r = 2.0f / SMOOTHING_FACTOR;
+    auto opts = Options::getInstance();
+    float r = 2.0f / opts->getSmoothingFactor();
 
-    #pragma omp parallel for // NOLINT(openmp-use-default-none)
-    for (int i = 0; i < PARTICLE_COUNT; i++) {
+    //#pragma omp parallel for // NOLINT(openmp-use-default-none)
+    for (int i = 0; i < opts->getParticleCount(); i++) {
 
 
         auto p = particles[i];
@@ -78,28 +80,6 @@ shared_ptr<GridCell> Grid::getCell(int x, int y, int z) {
             this->gridPoints[x+1][ y ][z+1],
             this->gridPoints[x+1][y+1][z+1],
             this->gridPoints[ x ][y+1][z+1]
-            /*
-            this->gridPoints[ x ][y+1][ z ],
-            this->gridPoints[x+1][y+1][ z ],
-            this->gridPoints[x+1][ y ][ z ],
-            this->gridPoints[ x ][ y ][ z ],
-            this->gridPoints[ x ][y+1][z+1],
-            this->gridPoints[x+1][y+1][z+1],
-            this->gridPoints[x+1][ y ][z+1],
-            this->gridPoints[ x ][ y ][z+1]
-             */
-            // TODO -> tahle je to v prezentaci, ale nemám ponětí, jestli to je dobře
-            // TODO -> ASI TO DĚLEJ PODLE http://paulbourke.net/geometry/polygonise/
-            /*
-            this->gridPoints[ x ][ y ][z+1],
-            this->gridPoints[x+1][ y ][z+1],
-            this->gridPoints[x+1][y+1][z+1],
-            this->gridPoints[ x ][y+1][z+1],
-            this->gridPoints[ x ][ y ][ z ],
-            this->gridPoints[x+1][ y ][ z ],
-            this->gridPoints[x+1][y+1][ z ],
-            this->gridPoints[ x ][y+1][ z ]
-             */
             );
 }
 

@@ -43,7 +43,9 @@ int main(int argc, char* argv[]) {
         renderer->SetBackground(colors->GetColor3d("DarkOliveGreen").GetData());
         renderer->GetActiveCamera()->Pitch(90);
         renderer->GetActiveCamera()->SetViewUp(0, 0, 1);
+        renderer->GetActiveCamera()->SetPosition(10, 10, 10);
         renderer->ResetCamera();
+
 
         renderWindow->SetSize(600, 600);
         renderWindow->Render();

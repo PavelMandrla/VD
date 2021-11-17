@@ -3,7 +3,8 @@
 //
 
 #include "GridPoint.h"
-#include "defines.h"
+#include <cassert>
+#include "Options.h"
 
 float GridPoint::W_ij(float r, float h) {      // CUBIC SPLINE KERNEL FUNCTION
     float q = r / h;
@@ -20,5 +21,5 @@ float GridPoint::dist(Particle &p) const {
 }
 
 void GridPoint::addParticlesEffect(Particle &particle) {
-    this->value += particle.rho * W_ij(this->dist(particle), SMOOTHING_FACTOR);
+    this->value += particle.rho * W_ij(this->dist(particle), Options::getInstance()->getSmoothingFactor());
 }
