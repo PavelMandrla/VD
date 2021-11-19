@@ -13,46 +13,70 @@
 #include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 
-int main(int argc, char* argv[]) {
-    vtkNew<vtkNamedColors> colors;
+int frameI = 0;
+vtkActor * actor;
+vtkRenderWindow * renWin;
+vtkRenderWindowInteractor * renderWindowInteractor;
+vtkXMLPolyDataReader * reader;
 
-    std::string filename;
-    for (int i = 0; i < 100; i++) {
-        filename = std::to_string(i) + ".vtp";
+void readFile(int i) {
+    std::string filename = std::to_string(i) + ".vtp";
 
-        // Read all the data from the file
-        vtkNew<vtkXMLPolyDataReader> reader;
-        reader->SetFileName(filename.c_str());
-        reader->Update();
+    reader->SetFileName(filename.c_str());
+    reader->Update();
+}
 
-        // Visualize
-        vtkNew<vtkPolyDataMapper> mapper;
-        mapper->SetInputConnection(reader->GetOutputPort());
+class LoadNextCommand : public vtkCommand {
+public:
+vtkTypeMacro(LoadNextCommand, vtkCommand);
 
-        vtkNew<vtkActor> actor;
-        actor->SetMapper(mapper);
-        actor->GetProperty()->SetColor(colors->GetColor3d("NavajoWhite").GetData());
-
-        vtkNew<vtkRenderer> renderer;
-        vtkNew<vtkRenderWindow> renderWindow;
-        renderWindow->AddRenderer(renderer);
-        vtkNew<vtkRenderWindowInteractor> renderWindowInteractor;
-        renderWindowInteractor->SetRenderWindow(renderWindow);
-
-        renderer->AddActor(actor);
-        renderer->SetBackground(colors->GetColor3d("DarkOliveGreen").GetData());
-        renderer->GetActiveCamera()->Pitch(90);
-        renderer->GetActiveCamera()->SetViewUp(0, 0, 1);
-        renderer->GetActiveCamera()->SetPosition(10, 10, 10);
-        renderer->ResetCamera();
-
-
-        renderWindow->SetSize(600, 600);
-        renderWindow->Render();
-        renderWindow->SetWindowName("ReadPolyData");
-        renderWindowInteractor->Start();
-
+    static LoadNextCommand * New() {
+        return new LoadNextCommand;
     }
+
+    void Execute(vtkObject * vtkNotUsed(caller), unsigned long vtkNotUsed(eventId), void * vtkNotUsed(callData)) {
+        frameI += 1;
+        if (frameI == 309) frameI = 0;
+        readFile(frameI);
+        //texturedPlane->SetOrientation(0,0,0);
+        //texturedPlane->RotateZ(rot++);
+
+        renWin->Render();
+    }
+};
+
+
+int main(int argc, char* argv[]) {
+    auto colors = vtkNamedColors::New();
+    auto renderer = vtkRenderer::New();
+
+    // Create render window
+    renWin = vtkRenderWindow::New();
+    renWin->AddRenderer(renderer);
+    renWin->SetSize(600,600);
+
+    reader = vtkXMLPolyDataReader::New();
+    readFile(frameI);
+
+    vtkNew<vtkPolyDataMapper> mapper;
+    mapper->SetInputConnection(reader->GetOutputPort());
+
+    actor = vtkActor::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(colors->GetColor3d("NavajoWhite").GetData());
+
+    renderer->AddActor(actor);
+    renderer->ResetCamera();
+
+    // Create a RenderWindowInteractor
+    renderWindowInteractor = vtkRenderWindowInteractor::New();
+    renderWindowInteractor->SetRenderWindow(renWin);
+    renderWindowInteractor->Initialize();
+    renderWindowInteractor->CreateRepeatingTimer(1);
+    LoadNextCommand * loadCallback =  LoadNextCommand::New();
+    renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, loadCallback );
+
+    renderWindowInteractor->Start();
 
     return EXIT_SUCCESS;
 }
