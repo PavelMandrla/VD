@@ -13,11 +13,12 @@ private:
     static float W_ij(float r, float h);
 public:
     float value;
-    const float x, y, z;
+    float x, y, z;
 
     float dist(Particle &p) const;
 
     //GridPoint(Particle* particles, float x, float y, float z) : value(0.0f), x(x), y(y), z(z) {}
+    GridPoint() : value(0.0f), x(0), y(0), z(0) {};
     GridPoint(float x, float y, float z) : value(0.0f), x(x), y(y), z(z) {}
     GridPoint(float x, float y, float z, float value) : value(value), x(x), y(y), z(z) {}
 

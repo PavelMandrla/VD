@@ -10,11 +10,11 @@
 #include "Options.h"
 
 Grid::Grid(Particle *particles) {
-    this->gridPoints = vector<vector<vector<shared_ptr<GridPoint>>>>(81,vector<vector<shared_ptr<GridPoint>>>(81,vector<shared_ptr<GridPoint>>(81,nullptr)));
+    this->gridPoints = vector<vector<vector<GridPoint>>>(81,vector<vector<GridPoint>>(81,vector<GridPoint>(81)));
 
     float dp = 1.0f / 81.0f;
 
-    //#pragma omp parallel for // NOLINT(openmp-use-default-none)
+    #pragma omp parallel for // NOLINT(openmp-use-default-none)
     for (int x_i = 0; x_i < 81; x_i++) {
         auto pos_x = float(x_i) * dp - 0.5f;
         for (int y_i = 0; y_i < 81; y_i++) {
@@ -22,7 +22,7 @@ Grid::Grid(Particle *particles) {
             for (int z_i = 0; z_i < 81; z_i++) {
                 auto pos_z = float(z_i) * dp;
 
-                this->gridPoints[x_i][y_i][z_i] = make_shared<GridPoint>(pos_x, pos_y, pos_z);
+                this->gridPoints[x_i][y_i][z_i] = GridPoint(pos_x, pos_y, pos_z);
             }
         }
     }
@@ -33,7 +33,7 @@ void Grid::calculateValues(Particle* particles) {
     auto opts = Options::getInstance();
     float r = 2.0f / opts->getSmoothingFactor();
 
-    //#pragma omp parallel for // NOLINT(openmp-use-default-none)
+    #pragma omp parallel for // NOLINT(openmp-use-default-none)
     for (int i = 0; i < opts->getParticleCount(); i++) {
 
 
@@ -59,27 +59,27 @@ void Grid::calculateValues(Particle* particles) {
         for (int x = min_x; x <= max_x; x++) {
             for (int y = min_y; y <= max_y; y++) {
                 for (int z = min_z; z <= max_z; z++) {
-                    this->gridPoints[x][y][z]->addParticlesEffect(p);
+                    this->gridPoints[x][y][z].addParticlesEffect(p);
                 }
             }
         }
     }
 }
 
-shared_ptr<GridCell> Grid::getCell(int x, int y, int z) {
+unique_ptr<GridCell> Grid::getCell(int x, int y, int z) {
     assert(x >= 0 && x < 80);
     assert(y >= 0 && y < 80);
     assert(z >= 0 && z < 80);
 
-    return make_shared<GridCell>(
-            this->gridPoints[ x ][ y ][ z ],
-            this->gridPoints[x+1][ y ][ z ],
-            this->gridPoints[x+1][y+1][ z ],
-            this->gridPoints[ x ][y+1][ z ],
-            this->gridPoints[ x ][ y ][z+1],
-            this->gridPoints[x+1][ y ][z+1],
-            this->gridPoints[x+1][y+1][z+1],
-            this->gridPoints[ x ][y+1][z+1]
+    return make_unique<GridCell>(
+            &this->gridPoints[ x ][ y ][ z ],
+            &this->gridPoints[x+1][ y ][ z ],
+            &this->gridPoints[x+1][y+1][ z ],
+            &this->gridPoints[ x ][y+1][ z ],
+            &this->gridPoints[ x ][ y ][z+1],
+            &this->gridPoints[x+1][ y ][z+1],
+            &this->gridPoints[x+1][y+1][z+1],
+            &this->gridPoints[ x ][y+1][z+1]
             );
 }
 
@@ -88,8 +88,8 @@ float Grid::getGridMax() {
     for (int x = 0; x < 81; x++) {
         for (int y = 0; y < 81; y++) {
             for (int z = 0; z < 81; z++) {
-                if (gridPoints[x][y][z]->value > max)
-                    max = gridPoints[x][y][z]->value;
+                if (gridPoints[x][y][z].value > max)
+                    max = gridPoints[x][y][z].value;
             }
         }
     }

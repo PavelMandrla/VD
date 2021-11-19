@@ -5,7 +5,7 @@
 #ifndef CV9_GRIDCELL_H
 #define CV9_GRIDCELL_H
 
-#include <array>
+#include <vector>
 #include <list>
 #include <memory>
 #include <utility>
@@ -15,22 +15,15 @@
 
 using namespace std;
 
-typedef shared_ptr<GridPoint> GPP;
-
-
-
 class GridCell {
 private:
-    array<shared_ptr<GridPoint>, 8> vertices;
+    vector<GridPoint*> vertices;
 
     int getCubeIndex();
 
-    //vtkSmartPointer<vtkPoints> getPoints(int cubeIndex);
-
-    //vtkSmartPointer<vtkCellArray> getTriangles(int cubeIndex);
-
 public:
-    GridCell(GPP p1, GPP p2, GPP p3, GPP p4, GPP p5, GPP p6, GPP p7, GPP p8) : vertices({p1, p2, p3, p4, p5, p6, p7, p8}) {}
+    GridCell(GridPoint *p1, GridPoint *p2, GridPoint *p3, GridPoint *p4, GridPoint *p5, GridPoint *p6, GridPoint *p7, GridPoint *p8)
+        : vertices({p1, p2, p3, p4, p5, p6, p7, p8}) {}
 
     vtkSmartPointer<vtkPolyData> triangulate();
 

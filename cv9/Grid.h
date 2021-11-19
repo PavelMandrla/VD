@@ -14,13 +14,13 @@ using namespace std;
 
 class Grid {
 private:
-    vector<vector<vector<shared_ptr<GridPoint>>>> gridPoints;
+    vector<vector<vector<GridPoint>>> gridPoints;
     void calculateValues(Particle* particles);
 public:
 
     explicit Grid(Particle* particles);
 
-    shared_ptr<GridCell> getCell(int x, int y, int z);
+    unique_ptr<GridCell> getCell(int x, int y, int z);
 
     float getGridMax();
 
