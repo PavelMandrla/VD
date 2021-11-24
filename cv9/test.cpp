@@ -35,12 +35,9 @@ vtkTypeMacro(LoadNextCommand, vtkCommand);
     }
 
     void Execute(vtkObject * vtkNotUsed(caller), unsigned long vtkNotUsed(eventId), void * vtkNotUsed(callData)) {
-        frameI += 1;
-        if (frameI == 309) frameI = 0;
+        frameI++;
+        if (frameI == 386) frameI = 0;
         readFile(frameI);
-        //texturedPlane->SetOrientation(0,0,0);
-        //texturedPlane->RotateZ(rot++);
-
         renWin->Render();
     }
 };

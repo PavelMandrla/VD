@@ -61,4 +61,6 @@ ax2.set_xlim(0.25, len(labels) + 0.75)
 ax2.set_xlabel('rok')
 
 #plt.subplots_adjust(bottom=0.15, wspace=0.05)
-plt.show()
+#plt.show()
+
+plt.savefig('export.pdf')
