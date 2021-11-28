@@ -1,0 +1,143 @@
+### infovis
+- informační vizualizace
+- vazby mezi entitami, text, tabulky, grafy a stromy
+- mnohdy interpolace tady nemá žádný význam
+- dnes to roste rychleji, než scivis
+- nemáme intuitivní model toho, co chceme zobrazit
+  - problém s
+    - prostorovou organizací
+      - pozice nejsou jasně dané
+      - nemá to tvar
+    - barvami
+      - ve scivisu kladný náboj červený záporný modře
+        - tu nic takového není
+    - abstraktnější
+      - komplikuje to návrh vizualizace
+- tři skupiny dělání vizualizace
+  - reprezentace  
+    - organizace dat
+      - např v mřížce, či uložení v relační databázi
+      - infovis - databáze
+  - prezentace
+    - prezentování těch dat
+    - jak to ve finále vykreslíme
+  - interakce
+    - jak to udělat, aby měl uživatel možnost pracovat v reálném čase
+    - řezy, rotace, ...
+    - klikání, filtrování, prostě interaktivita na webu a animace
+      - easing nám může pomoci lépe pochopit, co se v grafu děje
+- u infovisu je jiný target audience, než u scivisu
+  - měl by to pochopit i někdo, kdo není v daném oboru odborník
+  - cíleno na širší publikum
+- co tady patří
+  - visual reasoning
+    - vizuální usuzování
+  - vizuální programování
+  - ...
+- pravidla
+  - jako u scivisu
+  - follow the conventions
+    - je kupa existujících případů užití
+    - těžko budeme dělat vizualizace, která je naprosto unikatní
+  - tools of the trade
+    - nedělat věci pomocí nejvíce basic nástrojů
+      - jde to implementovat v canvasu, ale proč
+    - existuje hromada knihoven a frameworků, které můžeme použít
+- _geovis_
+  - mezi infovis a scivis
+    - tam se stýká obojí
+    - ja tam možné najít prvky obojího
+    - mapy států interpolovat nemůžu, výškovou mapu určitě ano
+- datová doména
+  - chybí prostorová informace
+  - doména nelze dělit do buněk
+  - není tam fyzické rozložení
+  - atributy
+    - i mimo numerické hodnoty
+      - rozdělení datových typů _slajd 8_
+        - __kvalitativní__
+          - říkají něco o kvalitě
+          - nominální/kategoriální - text, neuspořádaná množina, výčtový typ
+            - můžeme porovnávávat zda se rovnají, nebo ne (identitu)
+          - ordinální
+            - uspořádaná množina
+            - můžeme porovnávat identitu, menší, větší
+            - ratingy)
+        - __kvantitativní__
+          - patří do scivisu
+          - diskrétní, spojité
+            - integery, reálná čísla
+              - můžu dělat aritmetiku
+- dá se udělat incidenční matice možností, co všechno by infovis aplikace mohla umět
+  - obecně 7 funkcí/operací
+    - overview
+      - všechna data
+    - zoom
+      - interval dat
+    - filter
+      - část atributů
+    - details on demand
+      - atribut zobrazit až si jej vyžádám
+    - relate
+    - history
+    - extract
+  - piplina
+    - filtrování => mapování => renderování
+- ___tabulka___
+  - elementární způsob jak zapsat a vizualizovat taková data
+  - můžeme přidat
+    - nějaký sorting
+    - podbarvení buněk nějakou barvou
+      - podle třídy, necpat tam text a udělat to kompaktnější
+      - podle hodnoty
+    - bargraf jako pozadí buňky, samotná hodnota může být jako detail on demand
+    - glyphy ukazující trendy - např šipky u akcií
+      - rychlejší předání informací
+    - malé grafy
+  - sampling issue
+    - jakmile je vizualizace Text Based, tak to není tak škálovatelné
+      - je-li hodně inforací, tak je těžké to pojmout
+    - nahradíme text podle toho, co je popsáno výše
+- __vizualizace relací__
+  - stromy
+    - Node-link
+      - pozice glyphů - layout
+        - problém - _NO SHIT SHERLOCK_
+        - neměl by tam být overlaping
+        - ideálně by poměr stran byl 1:1(:1)
+        - ty hrany by měly být co nejkratší, křivky jsou NE - neměly by být složité
+      - Rooted tree layout
+        - může to být silně nevyvážené
+        - kořen hore
+      - Radial tree layout
+        - uzel uprostřed
+          - poloměry mají význam pater stromu
+        - povede to ke čtverci
+      - bubble tree layout
+        - pokud jsou uzly podle počtu prvků nevyvážené
+      - 3d nedává smysl, pokud nemáme možnost s grafem pohnout
+      - treemapy
+      - __force-directed layout__
+        - algoritmus, který umí udělat automatické rozložení grafu
+        - dvě síly
+          - Fa - atraktivní
+          - Fr - repulzivní
+          - uzly se přitahují a odpuzují
+          - síly aplikujeme, dokud se nedostaneme do equilibria
+            - do tohoto steady state nám ten graf konverguje
+        - pro každý uzel si spočítám sílu
+          - sečtu síly
+        - na slajdu jsou dvě používané definice sil
+        - on tam má ještě jednu sílu
+          - ta se to snaží udržet v kulové ploše
+          - atraktivní síla k centroidu
+      - energetický model
+        - snažíme se najít minimální energii toho layoutu toho grafu
+      - graph splatting
+        - máme hodněprvkový graf, který už máme nějak rozlayoutovaný
+        - nemáme dostatečné rozlišení
+        - uděláme konvoluci s nějakým gaussiánem
+          - to nám zachytí hustoty
+- borec po nás chce layout toho grafu __force-directed layout__
+  - tool of the trade - JE TO JEDNO
+    - on to udělal v threeJs
