@@ -1,7 +1,12 @@
 import numpy as np
 
+def load_points():
+    data = '../cv1/'
+
 points = [(1,1), (2,2), (3,2), (4,1)]
 n = 3
+
+
 
 def getA(points, n):
     result = []
