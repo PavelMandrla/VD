@@ -40,13 +40,14 @@ set label "BMI 30 (obezita)" at "2021-07-01",103.788
 
 set style line 1 lt rgb "#A00000" lw 2 pt 0
 
-f(x) = a + b*x
-#fit f(x) "data_processed.csv" index 0 using 1:2 via a,b#,c,d
+f_a(y) = 7.63327033e-08 * y**3 + -9.27654766e-07 * y**2 + -9.04106985e-02 * y + 1.21056309e+02
+f(x) = f_a((tm_year(x) - 2020) * 366 + tm_yday(x))
+
 
 # Need full using spec for x time data -> missing using 1:2
 set datafile separator ","
 
-plot "data_processed.csv" index 0 using 1:2 w lp ls 1 title "váha Pavla Mandrly" #, \
-  #"data_processed.csv" index 1 using 1:2 title "Inside" with lines#, f(x) title "Inside approx."
+plot "data_processed.csv" index 0 using 1:2 w lp ls 1 title "váha Pavla Mandrly", \
+ f(x) title "aproximace polynomem"
 
 pause -1
