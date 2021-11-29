@@ -135,7 +135,7 @@ Vector3 Cell::GradGamma( const Vector3 & uvw ) const {
             );
 }
 
-#define SAMPLE_COUNT 2
+#define SAMPLE_COUNT 8
 
 float Cell::Integrate( Ray & ray, const float t0, const float t1 ) const {
     float sum = 0.0f;
@@ -251,44 +251,32 @@ float Cell::rho_H() const
 
 void Cell::FrontToBack(Ray &ray, CellHit & cellHit, Vector3 &sample_color, float &sample_alpha) const {
     const Vector3 light(300.0f, 800.0f, 800.0f);
-    //const float alpha = 0.01f;
-    float alpha = 0;
-    float px[4] = {0.05f, 0.45f, 0.55f, 0.95f};
-    float py[2] = {0.001f, 0.2f};
+    float px_alpha[4] = {0.3f, 0.8f, 0.9f, 1.3f};
+    float py_alpha[2] = {0.0f, 0.6f};
 
-    float px_alpha[4] = {0.0f, 0.3f, 0.7f, 1.0f};
-    float py_alpha[2] = {0.0f, 0.02f};
-
-
-    float integral_sum = 0.0f;
-    float lambert_sum = 0.0f;
     float dif = (cellHit.t_1 - cellHit.t_0) / SAMPLE_COUNT;
     for (int i = 0; i < SAMPLE_COUNT; i++) {
+
         float t = cellHit.t_0 + float(i) * dif;
         auto p = ray.eval(t);
         auto uvw = this->u(p);
-
         float sample = this->Gamma_TriCubic(uvw);
-        float t_sample = transfer_function(sample, px, py);
 
-        integral_sum += t_sample * dif;
-        alpha += transfer_function(sample, px_alpha, py_alpha) * dif;
+        float alpha_in = sample_alpha;
+        Vector3 C_in = sample_color;
+        float alpha = transfer_function(sample, px_alpha, py_alpha);
 
-        auto n = -this->GradGamma(p);
+        sample_alpha = alpha_in + (1-alpha_in) * alpha;
+
+        auto n = this->GradGamma(p);
         Vector3 L = light - p;
         L.Normalize();
         auto LN = L.DotProduct(n);
-        //lambert_sum += transfer_function(LN, px, py);
-        lambert_sum += LN;
+        Vector3 C {LN, LN, LN};
 
+        sample_color = C_in + (1 - alpha_in) * alpha * C * transfer_function_color(sample);
 
     }
-    float sum = /*integral_sum +*/ lambert_sum;
-    sample_color += (1-sample_alpha) * alpha * Vector3(sum, sum, sum);
-    //sample_color += Vector3(integral_sum, integral_sum, integral_sum);
-
-    sample_alpha += (1-sample_alpha) * alpha;
-    //sample_alpha = 0.01f;
 }
 
 
