@@ -23,6 +23,15 @@ vector<Mat> loadMats() {
     return result;
 }
 
+Mat loadMat(int i) {
+    char file_name[128];
+    sprintf(file_name, "../../data/u%05d.yml", i);
+    cv::Mat u;
+    cv::FileStorage fs(file_name, cv::FileStorage::READ);
+    fs["flow"] >> u;
+    return u;
+}
+
 enum DWhat {dx, dy};
 
 Vec2f getVecFieldVal(Vec2f pos, Mat vecField)  {
@@ -126,7 +135,7 @@ public:
 
 
 Mat getDerivatives(Mat input, DWhat dWhat) {
-    Mat result = Mat::zeros(input.size(), input.type());
+    Mat result = Mat::zeros(input.rows, input.cols, input.type());
 
     for (int y = 2; y < input.rows - 2; y++) {
         for (int x = 2; x < input.cols - 2; x++) {
@@ -159,7 +168,7 @@ Mat getDivergence(Mat input) {
 }
 
 Mat getCurl(Mat input) {
-    Mat result = Mat::zeros(input.size(), CV_32FC3);
+    Mat result = Mat::zeros(input.rows, input.cols, CV_32FC3);
     vector<Mat> channels(2);
     split(input, channels);
 
@@ -176,7 +185,7 @@ Mat getCurl(Mat input) {
 }
 
 Mat getVelocities(Mat input) {
-    Mat result = Mat::zeros(input.size(), CV_32FC1);
+    Mat result = Mat::zeros(input.rows, input.cols, CV_32FC1);
     for (int y = 0; y < result.rows; y++) {
         for (int x = 0; x < result.cols; x++) {
             result.at<float>(y, x) = sqrt(pow(input.at<Vec2f>(y, x)[0],2) + pow(input.at<Vec2f>(y, x)[1],2)) / sqrt(2.0);
@@ -187,12 +196,14 @@ Mat getVelocities(Mat input) {
 
 
 int main() {
-    auto map = ColorMap("../../plasma-table-byte-1024.csv");
-    auto mats = loadMats();
+    auto map_plasma = ColorMap("../../plasma-table-byte-1024.csv");
+    auto map_warm = ColorMap("../../smooth-cool-warm-table-byte-1024.csv");
 
     vector<Particle*> particles;
 
-    for (auto mat : mats) {
+    for (int i = 0; i < 1000; i++) {
+        auto mat = loadMat(i);
+
         auto divergence = getDivergence(mat);
         auto curl = getCurl(mat);
         auto velocities = getVelocities(mat);
@@ -201,19 +212,19 @@ int main() {
 
 
 
-        Mat velocities_col = Mat::zeros(velocities.size(), CV_8UC3);
-        Mat curl_col = Mat::zeros(curl.size(), CV_8UC3);
-        Mat divergence_col = Mat::zeros(curl.size(), CV_8UC3);
+        Mat velocities_col = Mat::zeros(velocities.rows, velocities.cols, CV_8UC3);
+        Mat curl_col = Mat::zeros(curl.rows, curl.cols, CV_8UC3);
+        Mat divergence_col = Mat::zeros(curl.rows, curl.cols, CV_8UC3);
         for (int y = 0; y < velocities_col.rows; y++) {
             for (int x = 0; x < velocities_col.cols; x++) {
-                velocities_col.at<Vec3b>(y, x) = map.getColor(velocities.at<float>(y, x));
-                curl_col.at<Vec3b>(y, x) = map.getColor(curl.at<Vec3f>(y, x)[2]);
-                divergence_col.at<Vec3b>(y, x) = map.getColor(divergence.at<float>(y, x));
+                velocities_col.at<Vec3b>(y, x) = map_plasma.getColor(velocities.at<float>(y, x));
+                curl_col.at<Vec3b>(y, x) = map_warm.getColor(curl.at<Vec3f>(y, x)[2]);
+                divergence_col.at<Vec3b>(y, x) = map_plasma.getColor(divergence.at<float>(y, x));
             }
         }
 
-        for (int x = 0; x < mats[0].cols; x+=20) {
-            for (int y = 0; y < mats[0].rows; y+=20) {
+        for (int x = 0; x < mat.cols; x+=20) {
+            for (int y = 0; y < mat.rows; y+=20) {
                 Point p1(x, y);
                 auto vec = mat.at<Vec2f>(y, x) * 3;
                 Point p2(x + vec[0], y + vec[1]);
@@ -221,9 +232,7 @@ int main() {
             }
         }
 
-        //for (auto p : particles) {
-        for (int i = 0; i < particles.size(); i++) {
-            auto p = particles[i];
+        for (auto p : particles) {
             p->move_RK4(mat);
             int x = std::clamp(int(p->getX()), 0, velocities_col.cols-1);
             int y = std::clamp(int(p->getY()), 0, velocities_col.rows-1);
@@ -243,12 +252,8 @@ int main() {
             divergence_col.at<Vec3b>(y, x) = Vec3b(0, 255, 0);
         }
 
-
-        //imshow("divergence", divergence);
         imshow("divergence colorized", divergence_col);
-        //imshow("curl", curl);
         imshow("curl colorized", curl_col);
-        imshow("velocities", velocities);
         imshow("velocities colorized", velocities_col);
 
         waitKey(20);
