@@ -14,6 +14,7 @@ sc = 40
 f_scale = 50
 tree_count = 50
 k = 5
+max_rad = 50
 
 cmap = matplotlib.cm.get_cmap('magma')
 
@@ -90,8 +91,13 @@ def get_mat_value(points, x, y, method, index):
 
     elif method == Method.FRANKE_NEILSON:
         neighbors_i = index.get_nns_by_vector([x, y], k)
-        r_p = points[neighbors_i[-1]].dist(Point(x, y))
+        p = Point(x, y)
+        r_p = points[neighbors_i[-1]].dist(p)
+        if r_p > max_rad:
+            return 0
         for i in neighbors_i:
+            if (points[i].dist(p)) > max_rad:
+                continue
             phi = points[i].phi_FN(Point(x, y), r_p)
             upper_sum += phi * points[i].f()
             lower_sum += phi
@@ -107,6 +113,17 @@ def shepard():
         print(x)
     return result
 
+def get_original():
+    result = np.zeros((width, width, 4), np.uint8)
+    for x in range(result.shape[0]):
+        for y in range(result.shape[1]):
+            n_x = float(x - width / 2) + 0.5
+            n_y = float(y - width / 2) + 0.5
+            value = f_(n_x, n_y)
+            print(value)
+            f_color = cmap(int(value))
+            result[x][y] = (255 * f_color[0], 255 * f_color[1], 255 * f_color[2], 255)
+    return result
 
 def shepard_Franke_Neilson():   #TODO -> přidat poloměr
     points, index = Point.generate(N, sc)
@@ -114,14 +131,14 @@ def shepard_Franke_Neilson():   #TODO -> přidat poloměr
 
     for x in range(result.shape[0]):
         for y in range(result.shape[1]):
-            #result[x][y][0] = get_mat_value(points, x, y, Method.FRANKE_NEILSON, index)
             value = get_mat_value(points, x, y, Method.FRANKE_NEILSON, index)
             print(value)
             f_color =  cmap(int(value))
             result[x][y] = (255 * f_color[0], 255 * f_color[1], 255 * f_color[2], 255)
-            #print(result[x][y])
-        #print(x)
     return result
 
+
+cv.imshow("original", get_original())
 cv.imshow("result", shepard_Franke_Neilson())
+#cv.imshow("result_2", shepard())
 cv.waitKey(0)
