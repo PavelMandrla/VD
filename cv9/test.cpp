@@ -13,46 +13,66 @@
 #include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 
-int main(int argc, char* argv[]) {
-    // Parse command line arguments
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " Filename(.vtp) e.g. Torso.vtp"
-                  << std::endl;
-        return EXIT_FAILURE;
-    }
+int frameI = 0;
+vtkActor * actor;
+vtkRenderWindow * renWin;
+vtkRenderWindowInteractor * renderWindowInteractor;
+vtkXMLPolyDataReader * reader;
 
-    std::string filename = argv[1];
+void readFile(int i) {
+    std::string filename = std::to_string(i) + ".vtp";
 
-    vtkNew<vtkNamedColors> colors;
-
-    // Read all the data from the file
-    vtkNew<vtkXMLPolyDataReader> reader;
     reader->SetFileName(filename.c_str());
     reader->Update();
+}
 
-    // Visualize
+class LoadNextCommand : public vtkCommand {
+public:
+vtkTypeMacro(LoadNextCommand, vtkCommand);
+
+    static LoadNextCommand * New() {
+        return new LoadNextCommand;
+    }
+
+    void Execute(vtkObject * vtkNotUsed(caller), unsigned long vtkNotUsed(eventId), void * vtkNotUsed(callData)) {
+        frameI++;
+        if (frameI == 386) frameI = 0;
+        readFile(frameI);
+        renWin->Render();
+    }
+};
+
+
+int main(int argc, char* argv[]) {
+    auto colors = vtkNamedColors::New();
+    auto renderer = vtkRenderer::New();
+
+    // Create render window
+    renWin = vtkRenderWindow::New();
+    renWin->AddRenderer(renderer);
+    renWin->SetSize(600,600);
+
+    reader = vtkXMLPolyDataReader::New();
+    readFile(frameI);
+
     vtkNew<vtkPolyDataMapper> mapper;
     mapper->SetInputConnection(reader->GetOutputPort());
 
-    vtkNew<vtkActor> actor;
+    actor = vtkActor::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(colors->GetColor3d("NavajoWhite").GetData());
 
-    vtkNew<vtkRenderer> renderer;
-    vtkNew<vtkRenderWindow> renderWindow;
-    renderWindow->AddRenderer(renderer);
-    vtkNew<vtkRenderWindowInteractor> renderWindowInteractor;
-    renderWindowInteractor->SetRenderWindow(renderWindow);
-
     renderer->AddActor(actor);
-    renderer->SetBackground(colors->GetColor3d("DarkOliveGreen").GetData());
-    renderer->GetActiveCamera()->Pitch(90);
-    renderer->GetActiveCamera()->SetViewUp(0, 0, 1);
     renderer->ResetCamera();
 
-    renderWindow->SetSize(600, 600);
-    renderWindow->Render();
-    renderWindow->SetWindowName("ReadPolyData");
+    // Create a RenderWindowInteractor
+    renderWindowInteractor = vtkRenderWindowInteractor::New();
+    renderWindowInteractor->SetRenderWindow(renWin);
+    renderWindowInteractor->Initialize();
+    renderWindowInteractor->CreateRepeatingTimer(1);
+    LoadNextCommand * loadCallback =  LoadNextCommand::New();
+    renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, loadCallback );
+
     renderWindowInteractor->Start();
 
     return EXIT_SUCCESS;
