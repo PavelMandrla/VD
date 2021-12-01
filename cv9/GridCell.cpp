@@ -6,7 +6,6 @@
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
 #include <map>
-#include "Options.h"
 
 #pragma region TRIANGULATION_TABLES
 
@@ -310,8 +309,9 @@ constexpr array<tuple<int, int>, 12> EDGE_VERTICES = {
 
 
 vtkSmartPointer<vtkPolyData> GridCell::triangulate() {
-    auto opts = Options::getInstance();
     auto cubeIndex = this->getCubeIndex();
+
+
     // CALCULATE POINTS
     int mcValue = aiCubeEdgeFlags[cubeIndex];
     //map<int, int> vertPointMap; // maps vertex index to index in vtkPoints
@@ -324,19 +324,19 @@ vtkSmartPointer<vtkPolyData> GridCell::triangulate() {
             auto v1 = this->vertices[get<0>(vertexIndices)];
             auto v2 = this->vertices[get<1>(vertexIndices)];
 
-            //cout << i << endl;
+            cout << i << endl;
 
-
-            float df = (opts->getThreshold() - v1->value) / (v2->value - v1->value);
+            /*
+            float df = (THRESHOLD - v1->value) / (v2->value - v1->value);
             float x = v1->x + (v2->x - v1->x) * df;
             float y = v1->y + (v2->y - v1->y) * df;
             float z = v1->z + (v2->z - v1->z) * df;
+            */
 
-
-            //float x = (v1->x + v2->x) / 2.0f;
-            //float y = (v1->y + v2->y) / 2.0f;
-            //float z = (v1->z + v2->z) / 2.0f;
-
+            float x = (v1->x + v2->x) / 2.0f;
+            float y = (v1->y + v2->y) / 2.0f;
+            float z = (v1->z + v2->z) / 2.0f;
+            cout << "   x:" << x << " y:" << y << " z:" << z << endl;
             points->InsertPoint(i, x, y, z);
             //vertPointMap[i] = points->InsertNextPoint(x, y, z);
         }
@@ -369,15 +369,14 @@ vtkSmartPointer<vtkPolyData> GridCell::triangulate() {
 }
 
 int GridCell::getCubeIndex() {
-    auto opts = Options::getInstance();
     int cubeindex = 0;
-    if (this->vertices[0]->value >= opts->getThreshold()) cubeindex |= 1;
-    if (this->vertices[1]->value >= opts->getThreshold()) cubeindex |= 2;
-    if (this->vertices[2]->value >= opts->getThreshold()) cubeindex |= 4;
-    if (this->vertices[3]->value >= opts->getThreshold()) cubeindex |= 8;
-    if (this->vertices[4]->value >= opts->getThreshold()) cubeindex |= 16;
-    if (this->vertices[5]->value >= opts->getThreshold()) cubeindex |= 32;
-    if (this->vertices[6]->value >= opts->getThreshold()) cubeindex |= 64;
-    if (this->vertices[7]->value >= opts->getThreshold()) cubeindex |= 128;
+    if (this->vertices[0]->value >= THRESHOLD) cubeindex |= 1;
+    if (this->vertices[1]->value >= THRESHOLD) cubeindex |= 2;
+    if (this->vertices[2]->value >= THRESHOLD) cubeindex |= 4;
+    if (this->vertices[3]->value >= THRESHOLD) cubeindex |= 8;
+    if (this->vertices[4]->value >= THRESHOLD) cubeindex |= 16;
+    if (this->vertices[5]->value >= THRESHOLD) cubeindex |= 32;
+    if (this->vertices[6]->value >= THRESHOLD) cubeindex |= 64;
+    if (this->vertices[7]->value >= THRESHOLD) cubeindex |= 128;
     return cubeindex;
 }
