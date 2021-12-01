@@ -1,0 +1,117 @@
+## vizualizace objemových/volumetrických dat
+- topologická dimenze = 3
+- geometrická dimenze = 3
+- reprezentováno jako skalární pole
+  - R3 do R
+- formáty
+  - DICOM - medical imaging
+  - tiff -
+- algoritmy podobné raytracingu
+  - renderování objemu
+  - naše buňka je krychle
+    - voxel / cell
+      - voxel
+        - plocha/objem, který má přisouzený konstantí hodnotu kolem jeho těžiště
+      - cell
+        - šetisten, kde sample pointy jsou rohy a v rámci buňky můžeme interpolovat
+        - my se zabýváme buňkami
+- metody zobrazení se dělí na přímé a nepříme
+  - přímé
+    - ukážeme si detailně a budeme implementovat
+    - stojí to na raycastingu
+      - vrhneme paprsky proti objemu
+        - v tom nemáme trojúhelníky - hledáme průsečíky s nějakými izoplochami - plochy, které mají předdefinovanou hodnotu hustoty
+        - používá se raymarching
+          - dělají se diskrétní vzorky podél paprsku
+            - jedeme, samplujeme a rozhodujeme, zda už jsme izoplochou prošli, nebo ne
+          - co s těmi vzorky?
+            - MIP
+              - maximum intensity projection
+              - podobá se rentgenu
+              - pro daný pixel dostanu největší hodnotu, kterou v rámci objemu najdu
+              - ztrácíme informaci o hloubce - jednoduché, ale není ideální
+            - Průměr
+              - střední hodnota
+              - mnohem méně kontrastní, než MIP
+            - Thin slice
+              - tenký řez
+              - uděláme si hranici v prostoru, omezíme to na intervalu a maximum hledáme je v rámci tohoto intervalu
+            - objemové renderování DVR (direct volume rendering)
+              - ekvivalent raytracingu
+                - stíny, globální iluminace, odlesky, propustnost
+                - vypadá to velmi slušně
+              - můžeme si udělat nějakou funkci, která nám bude udávat, jak se bude budou jednotlivé volumetrické informace na základě jejich hodnoty zobrazovat
+                - měkké tkáně budou průsvitné, zatímco kosti budou dávat hodnotu 1
+              - slajd 7 - pipelina procesu
+                - musíme mít data uložena v nějaké struktuře, kterou jsme schopni dostatečně rychle traverzovat
+                - pak to musíme nějak interpolovat
+                  - chceme vědět, jak se nám hodnota pohybuje podél toho raye
+                - pak spočítat gradient
+                  - potřebujeme umět spočítat normálu naší izoplochy
+                - klasifikace
+                  - chceme třeba rozlišovat mezi malou, střední a velkou hustotou
+                    - např typ tkáně
+                    - na základě toho vykreslujeme
+                - shading a iluminace
+                - kompozice
+                  - máme tisíc samplů na tom paprsku, tak to musíme nějak dát dokupy
+              - absorpční model
+                - částečky našeho modelu jsou černé těleso, absorbuje to světlo, které jím prochází
+              - emisní model
+                - částečky jsou zcela průsvitné, ještě k tomu světlu mohou něco přidat
+              - emisní a absorpční model
+                - kombinace
+                - v DVR
+              - single scattering
+                - světlo se může na částici rozptýlit
+              - multiple scattering
+                - kompletní iluminační model podobný pathtracingu
+            - rovnice
+              první část
+                - Is0
+                  - co mi svítí do mého objemu ve směru toho paprsku
+                    - 1, 1, 1
+                    - prakticky enviromentální mapa
+                  - dochází k útlumu, dokud nevylezu z toho objemu
+                    - e na -tau(s0, s)
+                      - integrál mojí hustoty
+              - druhá část
+                - emisivita z jednotlivých bodů, které tam mám
+                  - udělám na bodíku lamberta a dostanu z něj nějaký zdroj, který mi svítí do kamery
+                    - to tam taky musím přičíst
+                    - opět to utlumím o integrál z toho objemu, co mám před sebou
+              - v uzavřené formě stejně jako u iluminační rovnice neexistuje analytické řešení
+                - použijeme numerické řešení
+                  - kvadraturní vzorce
+            - klasifikace
+              - transfer funkce
+                - banalita z R do R
+                - preklasifikace / postklasifikace
+                  - pre - hodíme to na ty hodnoty, které v buňce známe
+                  - post - interpolovanou hodnotu hodíme do transfer funkce
+            - kompozice
+              - může běžet odzadu i odpředu
+                - jak procházím oběm vůči pozorovateli
+              - každý sample point dostávám alfa(opacitu) a C(barvu)
+              - out výsledek
+              - u front to back můžu mít early ray termination
+            - normála/gradient
+              - na izoploše máme stejnou hustotou
+                - izoplocha je prakticky vrstevnice
+                - na jedné i na druhé straně budou rozdílné hustoty
+                  - uděláme diferenci
+              - budu dostávat nějaké artefakty
+                - místo trilineární interpolace přejdeme na trikubickou
+                  - 64 koeficientů
+            - traverzace
+              - máme to uloženo v krychličkách
+              - stačí mi identifikovat konkrétní krychli - nepotřebuju nějaký BVH strom
+              - potřebuju zjistit, ve kterých dvou bodech vnikám dovnitř a ve kterém unikám
+  - nepřímé
+    - chceme převést objem na nějký mesh
+      - uděláme triangulaci a tu pak zobrazit
+    - budeme dělat jindy
+  - slicing
+    - vyžaduje hardware akcelerátor
+    - řežeme přes trojrozměrnou texturu
+    - to tady dělat nebudeme

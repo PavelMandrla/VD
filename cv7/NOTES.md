@@ -1,0 +1,21 @@
+### vizualizace tenzorových dat
+- strojařina, stavařina, ...
+- skalár (tenzor nultého řádu), vektor (prvního řádu)(magnituda a směr)
+- dyády (tenzory druhého řádu) - např matice 2x2m 3x3
+  - magnitudy v různých směrech
+    - difuzivita - materiál saje tekutinu různými směry
+- triády
+  - 3x3x3
+- čtvrtého řádu
+  - matice 4x4x4x4
+  - např u teorie relativity
+- základní vizualizace
+  - elypsoid, který je deformován na základě toho, jak jsou jednotlivé složky velké
+  - tam, kde je velká difusifita, tam bude ten elipsoid delší, než tam, kde je malá
+  - pokud to zobrazíme nahrubo jako ten hessián, tak to není moc přehlední
+    - jsou vidět směry
+- fibre tracking
+  -  získám vlastní vektor, pro který je ta difuzivita největší
+  - sleduji tu největší hodnotu
+    -  tím jsem si prakticky zadefinoval osu
+      -  můžu to spojit a dostat z toho nějakou trubku - slajd 27
