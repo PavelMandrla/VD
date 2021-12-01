@@ -1,0 +1,62 @@
+# pokračování infovisu
+- hierarchická vizualizace
+  - grafové struktury
+    - NODE-LINK
+  - umístění bodů může mít nějaký význam
+    - u FDL je to random a nic nám to neříká
+    - např Y - generace, X abecedně
+- použití splinů, raději než rovných čar - zlepšuje to přeheldnost
+- grupování některých čar dohromady - zmenšení počtu hran - lepší přeheldnost, není to vrabčí hnízdo
+- orthogonální trackování
+  - lepší trackování vazeb, je to jako plošný spoj
+- Icicle plots
+  - krápníkový graf
+  - osa y mi zjemňuje dělení
+- metody bundlování hran
+  - Force-directed edge bundling
+  - ...
+- D3.js - grafová knihovna pro javascript
+
+# vícerozměrná data
+- jak to zakreslit?
+- multivariační dataset
+  - data mám uložená v nějaké tabulce
+  - N řádků(objektů), K sloupců (atributů)
+  - graf
+    - osy nemám kolmé, ale mám je paralelní  
+    - nakreslím křivku reprezentující jeden objekt
+      - pro každý objekt
+    - musíme nějak znormalizovat škálu os
+      - měli bychom znát meze
+    - můžu na těch osách jednoduše filtrovat, vyberu interval a dostanu jen ty čáry, které to splňují
+  - pokud ale máme příliš velké množství dimenzí, musíme redukovat dimenzi
+    - projekce K dimenzionálních vektorů do k dimenzí
+      - co je projekční fce P?
+        - dvě omezení
+          - zachování vzdáleností
+          - zachování informace o sousedství
+          - k popsání tohoto záměru slouží __stress funkce__
+            - indikátor toho, jak jsou tyto podmínky splněny
+            - _metody redukce dimenze minimalizují stress funkci_
+      - __multidimenzionální scaling__
+        - musíme o datasetu znát čtvercovou matici _M_, která nám říká, jaké jsou vzdálenosti/nepodobnosti mezi prvky datasetu
+          - vzdálenosti jsou tam dány pomocí nějaké metriky/pseudometriky
+        - __embeding__
+          - k-dimenzoinálnímu vektoru přiřadíme vektor v jiné dimenzi
+        - ___FastMap___
+          - vybereme dva body, které maximalizují tu metriku, kterou používáme
+            - všechny ostatní body promítnu na úsečku danou těmito dvěma body
+            - rekurzivně se to aplikuje na projekce kolmé k dané úsečce (hyperplaně)
+          - lineární složitost
+          - vyzkoušíme si to prakticky
+            - AAAHHH
+            - odkaz na funkční implementaci
+            - buď si vymyslet nějaká syntetická data
+              - třeba tak, ať je to ze začátku equdistantně na ose a zbytek vygenerovat rádoby random
+              - K > 4
+              - vykreslení pomocí nějaké JS knihovny, D3.js, chartjs
+                - interaktivní
+        - ___Spektrální rozklad___, ___LLE___, ___Isomap___
+        - můžeme nějak zpětně dokreslit info o dalších dimenzích?
+          - dobarvení
+          - interaktivita zobrazující nějaký popisek vyšší dimenze
