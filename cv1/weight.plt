@@ -16,7 +16,7 @@ set grid back linestyle 81
 set xtics nomirror
 set ytics nomirror
 
-set title "Váha Pavla Mandrly během let v období od 1. 1. 2020 do 31. 12. 2021" font "sans-Bold"
+set title "Váha Pavla Mandrly v období od 1. 1. 2020 do 31. 12. 2021" font "sans-Bold"
 set xlabel "Datum"
 set ylabel "Váha (kg)"
 
@@ -35,8 +35,8 @@ set xrange ["2020-01-01":"2021-12-31"]
 set arrow from "2020-01-01",86.49 to "2021-12-31",86.49 filled back dt 3 lw 1 lc rgb "orange" nohead
 set arrow from "2020-01-01",103.788 to "2021-12-31",103.788 filled back dt 3 lw 1 lc rgb "red" nohead
 
-set label "BMI 25 (nadváha)" at "2021-07z-01",86.49
-set label "BMI 30 (obezita)" at "2021-07-01",103.788
+set label "BMI 25 (nadváha)" at "2021-07-01", 88.49
+set label "BMI 30 (obezita)" at "2021-07-01", 105.788
 
 set style line 1 lt rgb "#A00000" lw 2 pt 0
 
