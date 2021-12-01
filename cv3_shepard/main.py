@@ -18,25 +18,12 @@ max_rad = 50
 
 cmap = matplotlib.cm.get_cmap('magma')
 
-class Method(Enum):
-    NORMAL = 1
-    FRANKE_NEILSON = 2
-
 def gaussian(x, mu=0, sig=1):
     return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
 
 
 def f_(x, y):
     return gaussian(x, mu=0, sig=sc) * gaussian(y, mu=0, sig=sc) * 256
-
-
-def f(x, y):
-    return np.sin(x) * np.cos(y)
-
-'''
-def f_(x, y):
-    return ((f(float(x)/f_scale, float(y)/f_scale) + 1) / 2.0) * 256
-'''
 
 class Point:
     @classmethod
@@ -49,7 +36,6 @@ class Point:
             points.append(p)
         index.build(tree_count, -1)
         return points, index
-        #return [Point(norm(scale=scale), norm(scale=scale)) for _ in range(count)]
 
     def __init__(self, x, y):
         self.x = x
@@ -77,41 +63,25 @@ class Point:
         return (top/bottom)**2
 
 
-def get_mat_value(points, x, y, method, index):
+def get_mat_value(points, x, y, index):
     x = float(x - width/2) + 0.5
     y = float(y - width/2) + 0.5
     upper_sum = 0.0
     lower_sum = 0.0
-    if method == Method.NORMAL:
-        for p_i in points:
-            phi = p_i.phi(Point(x, y))
-            upper_sum += phi * p_i.f()
-            lower_sum += phi
-        return upper_sum / lower_sum
 
-    elif method == Method.FRANKE_NEILSON:
-        neighbors_i = index.get_nns_by_vector([x, y], k)
-        p = Point(x, y)
-        r_p = points[neighbors_i[-1]].dist(p)
-        if r_p > max_rad:
-            return 0
-        for i in neighbors_i:
-            if (points[i].dist(p)) > max_rad:
-                continue
-            phi = points[i].phi_FN(Point(x, y), r_p)
-            upper_sum += phi * points[i].f()
-            lower_sum += phi
-        return upper_sum / lower_sum
+    neighbors_i = index.get_nns_by_vector([x, y], k)
+    p = Point(x, y)
+    r_p = points[neighbors_i[-1]].dist(p)
+    if r_p > max_rad:
+        return 0
+    for i in neighbors_i:
+        if (points[i].dist(p)) > max_rad:
+            continue
+        phi = points[i].phi_FN(Point(x, y), r_p)
+        upper_sum += phi * points[i].f()
+        lower_sum += phi
+    return upper_sum / lower_sum
 
-def shepard():
-    points, index = Point.generate(N, sc)
-    result = np.zeros((width, width, 3), np.uint8)
-
-    for x in range(result.shape[0]):
-        for y in range(result.shape[1]):
-            result[x][y] = get_mat_value(points, x, y, Method.NORMAL, index)
-        print(x)
-    return result
 
 def get_original():
     result = np.zeros((width, width, 4), np.uint8)
@@ -125,13 +95,13 @@ def get_original():
             result[x][y] = (255 * f_color[0], 255 * f_color[1], 255 * f_color[2], 255)
     return result
 
-def shepard_Franke_Neilson():   #TODO -> přidat poloměr
+def shepard_Franke_Neilson():
     points, index = Point.generate(N, sc)
     result = np.zeros((width, width, 4), np.uint8)
 
     for x in range(result.shape[0]):
         for y in range(result.shape[1]):
-            value = get_mat_value(points, x, y, Method.FRANKE_NEILSON, index)
+            value = get_mat_value(points, x, y, index)
             print(value)
             f_color =  cmap(int(value))
             result[x][y] = (255 * f_color[0], 255 * f_color[1], 255 * f_color[2], 255)
@@ -140,5 +110,4 @@ def shepard_Franke_Neilson():   #TODO -> přidat poloměr
 
 cv.imshow("original", get_original())
 cv.imshow("result", shepard_Franke_Neilson())
-#cv.imshow("result_2", shepard())
 cv.waitKey(0)
