@@ -32,7 +32,7 @@ class ColorMap {
 private:
     struct ValCol {
         float value;
-        Vec3b color;
+        Vec4b color;
     };
     vector<ValCol> values;
 
@@ -55,17 +55,27 @@ public:
             getline(iss, tmp, ',');
             b = stoi(tmp);
 
-            this->values.push_back(ValCol { value, Vec3b(b, g, r)});
+            this->values.push_back(ValCol { value, Vec4b(b, g, r, 255)});
         }
     }
 
-    Vec3b getColor(float value) {   // OPTIMALIZACE PRICHAZEJI POZDEJI
+    Vec4b getColor(float value) {   // OPTIMALIZACE PRICHAZEJI POZDEJI
         for (int i = 0; i < this->values.size() - 1; i++) {
             if (this->values[i + 1].value > value) {
                 return this->values[i].color;
             }
         }
         return this->values[this->values.size() - 1].color;
+    }
+
+    Mat colorize(const Mat& input) {
+        Mat output = Mat::zeros(input.rows, input.cols, CV_8UC4);
+        for (int y = 0; y < input.rows; y++) {
+            for (int x = 0; x < input.cols; x++) {
+                output.at<Vec4b>(y, x) = this->getColor(input.at<float>(y, x));
+            }
+        }
+        return output;
     }
 };
 
@@ -155,7 +165,7 @@ Mat getDivergence(Mat input) {
 }
 
 Mat getCurl(Mat input) {
-    Mat result = Mat::zeros(input.rows, input.cols, CV_32FC3);
+    Mat result = Mat::zeros(input.rows, input.cols, CV_32FC1);
     vector<Mat> channels(2);
     split(input, channels);
 
@@ -165,7 +175,7 @@ Mat getCurl(Mat input) {
     for (int y = 0; y < result.rows; y++) {
         for (int x = 0; x < result.cols; x++) {
             float val = vy_dx.at<float>(y, x) - vx_dy.at<float>(y, x);
-            result.at<Vec3f>(y, x) = Vec3f(0, 0, (val + 1.0) / 2.0);
+            result.at<float>(y, x) =(val + 1.0) / 2.0;
         }
     }
     return result;
@@ -181,81 +191,65 @@ Mat getVelocities(Mat input) {
     return result;
 }
 
+void drawLines(Mat &mat_col, Mat &mat_src) {
+    srand(0);
+    for (int x = 15; x < mat_src.cols; x += 15) {
+        for (int y = 15; y < mat_src.rows; y += 15) {
+            auto nx = x + int((rand() % 10)  - 10);
+            auto ny = y + int((rand() % 10)  - 10);
+            auto vec = mat_src.at<Vec2f>(ny, nx) * 3;
+            Point p1(nx, ny);
+            Point p2(nx + vec[0], ny + vec[1]);
+            if (norm(p1 - p2) > 1.2) {
+                arrowedLine(mat_col, p1, p2, Vec4b(0, 0, 0, 0));
+            }
+        }
+    }
+}
+
 
 int main() {
     auto map_plasma = ColorMap("../plasma-table-byte-1024.csv");
     auto map_warm = ColorMap("../smooth-cool-warm-table-byte-1024.csv");
+    namedWindow("curl", WINDOW_NORMAL);
+    namedWindow("velocities", WINDOW_NORMAL);
 
     vector<Particle*> particles;
 
     for (int i = 0; i < 1000; i++) {
         auto mat = loadMat(i);
 
-        auto divergence = getDivergence(mat);
-        auto curl = getCurl(mat);
-        auto velocities = getVelocities(mat);
+        const auto divergence = getDivergence(mat);
+        const auto curl = getCurl(mat);
+        const auto velocities = getVelocities(mat);
 
         particles.push_back(new Particle(120.0, 200.0, 1.0));
 
+        Mat velocities_col = map_plasma.colorize(velocities);
+        Mat curl_col = map_warm.colorize(curl);
+        Mat divergence_col = map_plasma.colorize(divergence);
 
+        drawLines(curl_col, mat);
+        drawLines(velocities_col, mat);
 
-        Mat velocities_col = Mat::zeros(velocities.rows, velocities.cols, CV_8UC3);
-        Mat curl_col = Mat::zeros(curl.rows, curl.cols, CV_8UC3);
-        Mat divergence_col = Mat::zeros(curl.rows, curl.cols, CV_8UC3);
-        for (int y = 0; y < velocities_col.rows; y++) {
-            for (int x = 0; x < velocities_col.cols; x++) {
-                velocities_col.at<Vec3b>(y, x) = map_plasma.getColor(velocities.at<float>(y, x));
-                curl_col.at<Vec3b>(y, x) = map_warm.getColor(curl.at<Vec3f>(y, x)[2]);
-                divergence_col.at<Vec3b>(y, x) = map_plasma.getColor(divergence.at<float>(y, x));
-            }
-        }
-
-        srand (0);
-        for (int x = 0; x < mat.cols; x += 15) {
-            for (int y = 0; y < mat.rows; y += 15) {
-                auto nx = x + int((rand() % 10)  - 10);
-                auto ny = y + int((rand() % 10)  - 10);
-                Point p1(nx, ny);
-                auto vec = mat.at<Vec2f>(ny, nx) * 3;
-                Point p2(nx + vec[0], ny + vec[1]);
-                if (norm(p1 - p2) > 2) {
-                    arrowedLine(curl_col, p1, p2, Vec3b(0, 0, 0));
-                    arrowedLine(velocities_col, p1, p2, Vec3b(0, 0, 0));
-                }
-            }
-        }
-
-        //for (auto p : particles) {
         for (int j = 0; j < particles.size(); j++) {
             auto p = particles[j];
             p->move_RK4(mat);
-            int x = std::clamp(int(p->getX()), 0, velocities_col.cols-1);
-            int y = std::clamp(int(p->getY()), 0, velocities_col.rows-1);
 
             if (j > 0) {
                 auto p1 = particles[j-1];
-
                 Point p_1(p->getX(), p->getY());
                 Point p_2(p1->getX(), p1->getY());
+
                 line(curl_col, p_1, p_2, Vec3b(70, 70, 255));
                 line(velocities_col, p_1, p_2, Vec3b(70, 70, 255));
             }
-
-            velocities_col.at<Vec3b>(y, x) = Vec3b(0, 255, 0);
-            curl_col.at<Vec3b>(y, x) = Vec3b(0, 255, 0);
-            divergence_col.at<Vec3b>(y, x) = Vec3b(0, 255, 0);
         }
 
-        Mat curl_scaled, velocities_scaled;
-
-        resize(curl_col, curl_scaled, Size(400, 400), 0, 0);
-        resize(velocities_col, velocities_scaled, Size(400, 400), 0, 0);
-
-        imshow("curl", curl_scaled);
-        imshow("velocities", velocities_scaled);
+        imshow("curl", curl_col);
+        imshow("velocities", velocities_col);
 
         waitKey(20);
     }
-
     return 0;
 }
